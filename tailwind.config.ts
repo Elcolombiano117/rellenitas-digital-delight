@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        poppins: ['Poppins', 'sans-serif'],
+        lato: ['Lato', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,6 +61,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Custom Rellenitas colors
+        "warm-beige": "hsl(var(--warm-beige))",
+        chocolate: "hsl(var(--chocolate))",
+        gold: "hsl(var(--gold))",
+        "purple-filling": "hsl(var(--purple-filling))",
       },
       borderRadius: {
         lg: "var(--radius)",
