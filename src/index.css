@@ -42,8 +42,12 @@ All colors MUST be HSL.
     /* Custom brand tokens */
     --warm-beige: 38 28% 95%;
     --chocolate: 17 35% 25%;
+    --chocolate-light: 17 35% 40%;
     --gold: 45 85% 52%;
     --purple-filling: 326 34% 44%;
+    --morado: 326 34% 44%;
+    --morado-light: 326 34% 60%;
+    --primary-glow: 45 85% 65%;
     --white: 0 0% 100%;
     
     /* Gradients */

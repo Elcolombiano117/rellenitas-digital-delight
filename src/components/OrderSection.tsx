@@ -3,6 +3,14 @@ import { MessageCircle, Phone } from "lucide-react";
 
 const OrderSection = () => {
   const handleWhatsAppOrder = () => {
+    // Generate a unique order ID for tracking
+    const orderId = `REL${Date.now().toString().slice(-6)}`;
+    
+    // For demo purposes, we'll open tracking after a short delay
+    setTimeout(() => {
+      window.open(`/tracking/${orderId}`, "_blank");
+    }, 2000);
+    
     window.open("https://wa.me/573001234567?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");
   };
 

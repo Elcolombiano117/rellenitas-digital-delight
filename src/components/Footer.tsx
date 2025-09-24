@@ -1,5 +1,6 @@
 import { Instagram, MessageCircle } from "lucide-react";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/new-logo.png";
+import audioCommercial from "@/assets/galletas-del-alma.mp3";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -14,32 +15,34 @@ const Footer = () => {
 
   return (
     <footer className="bg-chocolate text-white">
-      {/* Video Section - Proceso Artesanal */}
+      {/* Audio Commercial Section */}
       <div className="border-b border-white/10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-8">
             <h3 className="text-2xl font-poppins font-bold mb-4">
-              ¿Cómo las <span className="text-primary">hacemos</span>?
+              🎵 <span className="text-primary">Galletas del Alma</span>
             </h3>
             <p className="text-white/80 font-lato max-w-2xl mx-auto">
-              Descubre nuestro proceso artesanal donde cada Rellenita se hace con amor y dedicación
+              Escucha nuestro comercial y descubre por qué somos "El Abrazo Dulce" de Valledupar
             </p>
           </div>
           
-          {/* Placeholder for video - Can be replaced with actual video */}
           <div className="max-w-2xl mx-auto">
-            <div className="aspect-video bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-              <div className="text-center">
+            <div className="bg-white/10 rounded-2xl p-8 backdrop-blur-sm">
+              <div className="text-center mb-6">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
                   <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
                   </svg>
                 </div>
-                <p className="text-white/80 font-lato">
-                  Video del proceso artesanal<br />
-                  <span className="text-sm">(Próximamente)</span>
+                <p className="text-white/80 font-lato mb-4">
+                  "Tradición Rellena de Sabor"
                 </p>
               </div>
+              <audio controls className="w-full bg-white/20 rounded-xl">
+                <source src={audioCommercial} type="audio/mpeg" />
+                Tu navegador no soporta audio HTML5.
+              </audio>
             </div>
           </div>
         </div>
