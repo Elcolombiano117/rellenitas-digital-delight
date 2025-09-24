@@ -8,7 +8,7 @@ const OrderSection = () => {
     
     // For demo purposes, we'll open tracking after a short delay
     setTimeout(() => {
-      window.open(`/tracking/${orderId}`, "_blank");
+      window.open(`/seguimiento/${orderId}`, "_blank");
     }, 2000);
     
     window.open("https://wa.me/573001234567?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");

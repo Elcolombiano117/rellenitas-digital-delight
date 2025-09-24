@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Package, Truck, Heart, MapPin } from "lucide-react";
+import { CheckCircle, Package, Truck, Heart, MapPin, Clock, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -12,23 +12,25 @@ interface OrderTrackingProps {
 const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTrackingProps) => {
   const [currentStage, setCurrentStage] = useState(1);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [estimatedTime, setEstimatedTime] = useState(15);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const stages = [
     {
       id: 1,
-      title: "NACIMIENTO",
-      subtitle: "¡TU RELLENITA SE ESTÁ HACIENDO!",
+      title: "EN PREPARACIÓN",
+      subtitle: "¡TU RELLENITA ESTÁ NACIENDO!",
       icon: Heart,
-      description: "Tu Rellenita está naciendo. Cada capa se hace con amor, no con máquinas. Estamos en el paso 1 de 4.",
+      description: "Tu Rellenita está naciendo. Cada capa se hace con amor, no con máquinas. El relleno se derrite perfectamente mientras esperamos el momento ideal.",
       color: "from-primary to-primary-glow",
       animation: "animate-pulse"
     },
     {
       id: 2,
-      title: "EMPAQUE CON ALMA",
-      subtitle: "¡SE LO DEDICAN!",
+      title: "EN EMPAQUE",
+      subtitle: "¡EMPACADA CON CARIÑO!",
       icon: Package,
-      description: `Tu Rellenita ya está lista. ¡Y la estamos empacando con una dedicatoria especial! ${dedicatoria || `¿Sabes qué dice? 'Para ti, después de un día largo.'`}`,
+      description: `Empacada con cariño y lista para salir… ${dedicatoria ? `Con tu dedicatoria especial: "${dedicatoria}"` : 'Perfectamente preparada en nuestra caja especial.'}`,
       color: "from-chocolate to-chocolate-light",
       animation: "animate-bounce"
     },
@@ -37,16 +39,16 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
       title: "EN CAMINO",
       subtitle: "¡EL REPARTIDOR VA POR TI!",
       icon: Truck,
-      description: "Juanito lleva tu Rellenita hacia ti. Ya pasó por la calle 10… ¡está a solo 3 cuadras!",
+      description: "¡El repartidor va por ti! Juanito está en camino desde nuestra ubicación en Valledupar hasta tu dirección.",
       color: "from-morado to-morado-light",
       animation: "animate-pulse"
     },
     {
       id: 4,
-      title: "¡LLEGÓ TU MOMENTO DULCE!",
-      subtitle: "¡FELICIDADES!",
+      title: "¡LLEGÓ!",
+      subtitle: "¡TU MOMENTO DULCE HA LLEGADO!",
       icon: CheckCircle,
-      description: "¡Felicidades! Tu Rellenita llegó. Disfrútala… o compártela. Pero no la guardes para mañana.",
+      description: "Tu momento dulce ha llegado… ¡Disfrútala! Cada bocado es una pequeña celebración.",
       color: "from-primary to-secondary",
       animation: "animate-bounce"
     }
@@ -55,13 +57,32 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentStage(prev => {
-        if (prev < 4) return prev + 1;
+        if (prev < 4) {
+          const newStage = prev + 1;
+          if (newStage === 4) {
+            setShowConfetti(true);
+            // Play bell sound
+            const audio = new Audio('data:audio/wav;base64,UklGRvQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YdADAAAA');
+            audio.play().catch(() => {}); // Ignore errors if audio fails
+          }
+          return newStage;
+        }
         return prev;
       });
-    }, 5000); // Change stage every 5 seconds for demo
+    }, 6000); // Change stage every 6 seconds for demo
 
     return () => clearInterval(timer);
   }, []);
+
+  // Timer for estimated delivery time
+  useEffect(() => {
+    if (currentStage === 3) {
+      const timer = setInterval(() => {
+        setEstimatedTime(prev => Math.max(1, prev - 1));
+      }, 60000); // Update every minute
+      return () => clearInterval(timer);
+    }
+  }, [currentStage]);
 
   const currentStageData = stages[currentStage - 1];
 
@@ -71,30 +92,68 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
     window.open(url, '_blank');
   };
 
-  const MapAnimation = () => (
-    <div className="relative w-full h-40 bg-gradient-to-br from-beige to-white rounded-2xl p-4 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent"></div>
-      <div className="relative z-10">
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-chocolate font-lato">Universidad del Cesar</div>
-          <div className="text-xs text-chocolate font-lato">Parque de la Cultura</div>
-        </div>
-        <div className="mt-8 flex items-center justify-center">
-          <div className="relative">
-            <div className="w-6 h-6 bg-primary rounded-full animate-pulse flex items-center justify-center">
-              <Truck className="w-3 h-3 text-white" />
-            </div>
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-chocolate text-white px-2 py-1 rounded text-xs whitespace-nowrap">
-              Juanito, el Dulce Repartidor
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 text-center">
-          <div className="text-xs text-chocolate/60 font-lato">Tu destino</div>
-          <MapPin className="w-4 h-4 text-morado mx-auto mt-1" />
-        </div>
+  const handleWhatsAppDedication = () => {
+    window.open("https://wa.me/573001234567?text=¡Hola! Quiero agregar una dedicatoria especial a mi pedido " + orderId, "_blank");
+  };
+
+  const handleWhatsAppCard = () => {
+    window.open("https://wa.me/573001234567?text=¡Hola! Quiero agregar una tarjeta personalizada a mi pedido " + orderId, "_blank");
+  };
+
+  const GalletaAnimation = () => (
+    <div className="relative w-24 h-24 mx-auto mb-4">
+      <div className="absolute inset-0 bg-gradient-to-br from-chocolate to-chocolate-light rounded-full animate-pulse"></div>
+      <div className="absolute inset-2 bg-gradient-to-br from-morado to-morado-light rounded-full animate-bounce opacity-80"></div>
+      <div className="absolute inset-4 bg-primary rounded-full animate-pulse"></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs">
+        ❤️
       </div>
     </div>
+  );
+
+  const MapAnimation = () => (
+    <div className="space-y-4">
+      <div className="relative w-full h-48 bg-gradient-to-br from-beige to-white rounded-2xl p-4 overflow-hidden">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.8855!2d-73.2480!3d10.4741!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e8ab9aa9e5f5ef3%3A0x1234567890abcdef!2sCarrera%206%20%2313C-14%2C%20Valledupar%2C%20Cesar!5e0!3m2!1ses!2sco!4v1640000000000!5m2!1ses!2sco"
+          width="100%"
+          height="100%"
+          style={{ border: 0, borderRadius: '12px' }}
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        ></iframe>
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg">
+          <div className="flex items-center space-x-2">
+            <Truck className="w-4 h-4 text-primary animate-bounce" />
+            <span className="text-xs font-semibold text-chocolate">Juanito en camino</span>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-center space-x-2 bg-white/80 backdrop-blur-sm rounded-xl p-4">
+        <Clock className="w-5 h-5 text-morado" />
+        <span className="font-semibold text-chocolate">Llegará en {estimatedTime} minutos</span>
+      </div>
+    </div>
+  );
+
+  const ConfettiAnimation = () => (
+    showConfetti && (
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className={`absolute w-2 h-2 bg-primary animate-bounce`}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+              animationDuration: `${2 + Math.random() * 2}s`
+            }}
+          />
+        ))}
+      </div>
+    )
   );
 
   return (
@@ -137,7 +196,11 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
         </div>
 
         {/* Current Stage */}
-        <Card className="p-8 mb-8 bg-white/80 backdrop-blur-sm border-0 shadow-2xl">
+        <Card className="relative p-8 mb-8 bg-white/80 backdrop-blur-sm border-0 shadow-2xl overflow-hidden">
+          <ConfettiAnimation />
+          
+          {currentStage === 1 && <GalletaAnimation />}
+          
           <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${currentStageData.color} mx-auto mb-6 flex items-center justify-center ${currentStageData.animation}`}>
             <currentStageData.icon className="w-8 h-8 text-white" />
           </div>
@@ -155,9 +218,38 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
 
             {/* Special interactions per stage */}
             {currentStage === 1 && (
-              <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
-                ¿Quieres que incluyamos una nota personal?
-              </Button>
+              <div className="space-y-4">
+                <Button 
+                  onClick={handleWhatsAppDedication}
+                  variant="outline" 
+                  className="border-primary text-primary hover:bg-primary hover:text-white"
+                >
+                  <Gift className="w-4 h-4 mr-2" />
+                  ¿Quieres incluir una dedicatoria especial?
+                </Button>
+                <p className="text-xs text-chocolate/60 font-lato">
+                  Escríbenos por WhatsApp: "¡Para mi amor, siempre!"
+                </p>
+              </div>
+            )}
+
+            {currentStage === 2 && (
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-beige to-white p-6 rounded-2xl border border-chocolate/10">
+                  <div className="text-4xl mb-3">📦</div>
+                  <p className="text-sm text-chocolate/70 font-lato">
+                    Tu Rellenita está perfectamente empacada en nuestra caja especial con cinta morada.
+                  </p>
+                </div>
+                <Button 
+                  onClick={handleWhatsAppCard}
+                  variant="outline" 
+                  className="border-morado text-morado hover:bg-morado hover:text-white"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Agregar tarjeta personalizada
+                </Button>
+              </div>
             )}
 
             {currentStage === 3 && (
@@ -168,7 +260,14 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
 
             {currentStage === 4 && (
               <div className="space-y-4">
-                <div className="text-6xl animate-bounce">🍫</div>
+                <div className="bg-gradient-to-r from-beige to-white p-6 rounded-2xl">
+                  <div className="text-6xl animate-bounce mb-4">🍫</div>
+                  <img 
+                    src="/src/assets/rellenita-manjar.png" 
+                    alt="Tu Rellenita lista" 
+                    className="w-32 h-32 object-cover rounded-full mx-auto mb-4 shadow-lg"
+                  />
+                </div>
                 <Button 
                   onClick={() => setShowShareModal(true)}
                   className="bg-gradient-to-r from-primary to-primary-glow text-white font-semibold px-8 py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
