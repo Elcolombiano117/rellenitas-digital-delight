@@ -93,11 +93,11 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
   };
 
   const handleWhatsAppDedication = () => {
-    window.open("https://wa.me/573001234567?text=¡Hola! Quiero agregar una dedicatoria especial a mi pedido " + orderId, "_blank");
+    window.open("https://wa.me/573142621490?text=¡Hola! Quiero agregar una dedicatoria especial a mi pedido " + orderId, "_blank");
   };
 
   const handleWhatsAppCard = () => {
-    window.open("https://wa.me/573001234567?text=¡Hola! Quiero agregar una tarjeta personalizada a mi pedido " + orderId, "_blank");
+    window.open("https://wa.me/573142621490?text=¡Hola! Quiero agregar una tarjeta personalizada a mi pedido " + orderId, "_blank");
   };
 
   const GalletaAnimation = () => (

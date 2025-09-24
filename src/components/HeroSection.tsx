@@ -3,7 +3,7 @@ import heroBackground from "@/assets/hero-background.jpg";
 
 const HeroSection = () => {
   const handleOrderNow = () => {
-    window.open("https://wa.me/573001234567?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");
+    window.open("https://wa.me/573142621490?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");
   };
 
   return (

@@ -11,11 +11,11 @@ const OrderSection = () => {
       window.open(`/seguimiento/${orderId}`, "_blank");
     }, 2000);
     
-    window.open("https://wa.me/573001234567?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");
+    window.open("https://wa.me/573142621490?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");
   };
 
   const handleCallOrder = () => {
-    window.open("tel:+573001234567", "_self");
+    window.open("tel:+573142621490", "_self");
   };
 
   return (
