@@ -1,10 +1,15 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/hooks/useCart";
+import ShoppingCartPanel from "@/components/ShoppingCart";
 import logo from "@/assets/new-logo.png";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { getTotalItems } = useCart();
+  const totalItems = getTotalItems();
 
   const navigation = [
     { name: "Inicio", href: "#inicio" },
@@ -29,8 +34,8 @@ const Header = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-8">
+            <div className="hidden md:flex items-center gap-4">
+              <div className="flex items-baseline space-x-8">
                 {navigation.map((item) => (
                   <a
                     key={item.name}
@@ -41,10 +46,38 @@ const Header = () => {
                   </a>
                 ))}
               </div>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={() => setIsCartOpen(true)}
+              >
+                <ShoppingCart className="h-6 w-6 text-primary" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
             </div>
 
-            {/* Mobile menu button */}
-            <div className="md:hidden">
+            {/* Mobile menu button and cart */}
+            <div className="md:hidden flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={() => setIsCartOpen(true)}
+              >
+                <ShoppingCart className="h-6 w-6 text-primary" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
+              
               <Button
                 variant="ghost"
                 size="sm"
@@ -85,6 +118,9 @@ const Header = () => {
         <span className="hidden sm:inline">¡Habla con nosotros!</span>
         <span className="sm:hidden">WhatsApp</span>
       </Button>
+
+      {/* Shopping Cart Panel */}
+      <ShoppingCartPanel open={isCartOpen} onOpenChange={setIsCartOpen} />
     </>
   );
 };
