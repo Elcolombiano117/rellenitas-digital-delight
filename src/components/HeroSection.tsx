@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import QuickOrderDialog from "@/components/QuickOrderDialog";
 import heroBackground from "@/assets/hero-background.jpg";
 
 const HeroSection = () => {
+  const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
   const handleOrderNow = () => {
-    window.open("https://wa.me/573142621490?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");
+    setIsQuickOrderOpen(true);
   };
 
   return (
@@ -38,6 +43,13 @@ const HeroSection = () => {
           ¡Pedir Ahora!
         </Button>
       </div>
+
+      {/* Quick Order Dialog */}
+      <QuickOrderDialog 
+        open={isQuickOrderOpen} 
+        onOpenChange={setIsQuickOrderOpen}
+        onOpenCart={() => setIsCartOpen(true)}
+      />
     </section>
   );
 };

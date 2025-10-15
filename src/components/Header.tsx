@@ -3,11 +3,13 @@ import { Menu, X, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import ShoppingCartPanel from "@/components/ShoppingCart";
+import QuickOrderDialog from "@/components/QuickOrderDialog";
 import logo from "@/assets/new-logo.png";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
   const { getTotalItems } = useCart();
   const totalItems = getTotalItems();
 
@@ -20,7 +22,7 @@ const Header = () => {
   ];
 
   const handleWhatsApp = () => {
-    window.open("https://wa.me/573142621490?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");
+    setIsQuickOrderOpen(true);
   };
 
   return (
@@ -121,6 +123,13 @@ const Header = () => {
 
       {/* Shopping Cart Panel */}
       <ShoppingCartPanel open={isCartOpen} onOpenChange={setIsCartOpen} />
+      
+      {/* Quick Order Dialog */}
+      <QuickOrderDialog 
+        open={isQuickOrderOpen} 
+        onOpenChange={setIsQuickOrderOpen}
+        onOpenCart={() => setIsCartOpen(true)}
+      />
     </>
   );
 };
