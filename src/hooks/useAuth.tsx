@@ -91,7 +91,7 @@ export const useAuth = () => {
         description: "Has cerrado sesión exitosamente.",
       });
       
-      navigate('/auth');
+      navigate('/');
     } catch (error: any) {
       toast({
         title: "Error al cerrar sesión",

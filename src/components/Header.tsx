@@ -1,16 +1,20 @@
 import { useState } from "react";
-import { Menu, X, ShoppingCart } from "lucide-react";
+import { Menu, X, ShoppingCart, LogOut, LogIn, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import ShoppingCartPanel from "@/components/ShoppingCart";
 import QuickOrderDialog from "@/components/QuickOrderDialog";
 import logo from "@/assets/new-logo.png";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
   const { getTotalItems } = useCart();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const totalItems = getTotalItems();
 
   const navigation = [
@@ -62,6 +66,34 @@ const Header = () => {
                   </span>
                 )}
               </Button>
+
+              {user ? (
+                <div className="flex items-center gap-3 border-l border-border pl-4">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">{user.email}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={signOut}
+                    className="gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Salir
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                  className="gap-2"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Iniciar sesión
+                </Button>
+              )}
             </div>
 
             {/* Mobile menu button and cart */}
@@ -79,6 +111,26 @@ const Header = () => {
                   </span>
                 )}
               </Button>
+
+              {user ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={signOut}
+                  title="Salir"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate('/auth')}
+                  title="Iniciar sesión"
+                >
+                  <LogIn className="h-5 w-5" />
+                </Button>
+              )}
               
               <Button
                 variant="ghost"
@@ -104,6 +156,14 @@ const Header = () => {
                     {item.name}
                   </a>
                 ))}
+                {user && (
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      {user.email}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
