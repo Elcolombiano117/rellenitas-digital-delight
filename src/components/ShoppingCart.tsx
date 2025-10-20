@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/hooks/useCart";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import CheckoutForm from "@/components/CheckoutForm";
 
 interface ShoppingCartProps {
   open: boolean;
@@ -10,6 +12,7 @@ interface ShoppingCartProps {
 
 const ShoppingCart = ({ open, onOpenChange }: ShoppingCartProps) => {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -20,37 +23,62 @@ const ShoppingCart = ({ open, onOpenChange }: ShoppingCartProps) => {
     }).format(price);
   };
 
-  const handleWhatsAppOrder = () => {
+  const handleWhatsAppOrder = (formData: any) => {
     if (items.length === 0) return;
 
-    let message = "¡Hola! Quiero pedir Rellenitas\nMi pedido:\n\n";
+    let message = "¡Hola! Quiero pedir Rellenitas 🍪\n\n";
+    message += "📋 *Mi pedido:*\n";
     
     items.forEach((item) => {
       const itemTotal = item.price * item.quantity;
-      message += `- ${item.name} x${item.quantity} → ${formatPrice(itemTotal)}\n`;
+      message += `• ${item.name} x${item.quantity} → ${formatPrice(itemTotal)}\n`;
     });
     
-    message += `\nTotal: ${formatPrice(getTotalPrice())}\n`;
-    message += `\nDirección: [Escribe tu dirección aquí]`;
+    message += `\n💰 *Total:* ${formatPrice(getTotalPrice())}\n\n`;
+    message += "📍 *Datos de entrega:*\n";
+    message += `Nombre: ${formData.fullName}\n`;
+    message += `Dirección: ${formData.address}\n`;
+    message += `Ciudad: ${formData.city}, ${formData.department}\n`;
+    message += `Teléfono: ${formData.phone}\n`;
+    message += `💳 Método de pago: ${formData.paymentMethod === 'efectivo' ? 'Efectivo' : 'Transferencia'}`;
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/573142621490?text=${encodedMessage}`, "_blank");
     
     clearCart();
+    setShowCheckout(false);
     onOpenChange(false);
   };
 
+  const handleProceedToCheckout = () => {
+    setShowCheckout(true);
+  };
+
+  const handleBackToCart = () => {
+    setShowCheckout(false);
+  };
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={(open) => {
+      onOpenChange(open);
+      if (!open) setShowCheckout(false);
+    }}>
       <SheetContent className="w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="text-2xl font-poppins text-foreground">
-            🛒 Tu Carrito
+            {showCheckout ? "" : "🛒 Tu Carrito"}
           </SheetTitle>
         </SheetHeader>
 
         <div className="flex flex-col h-full pt-6">
-          {items.length === 0 ? (
+          {showCheckout ? (
+            <CheckoutForm
+              items={items}
+              totalPrice={getTotalPrice()}
+              onBack={handleBackToCart}
+              onConfirm={handleWhatsAppOrder}
+            />
+          ) : items.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
               <p className="text-muted-foreground text-center">
                 Tu carrito está vacío
@@ -126,11 +154,11 @@ const ShoppingCart = ({ open, onOpenChange }: ShoppingCartProps) => {
                 </div>
 
                 <Button
-                  onClick={handleWhatsAppOrder}
+                  onClick={handleProceedToCheckout}
                   className="w-full bg-primary text-white hover:bg-primary/90 h-12 text-lg font-semibold rounded-xl"
                   size="lg"
                 >
-                  📱 Enviar pedido por WhatsApp
+                  Continuar con el pedido
                 </Button>
               </div>
             </>
