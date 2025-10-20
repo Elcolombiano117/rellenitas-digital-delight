@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
+        quicksand: ['Quicksand', 'sans-serif'],
         lato: ['Lato', 'sans-serif'],
       },
       colors: {
@@ -89,10 +90,63 @@ export default {
             height: "0",
           },
         },
+        "fall": {
+          "0%": {
+            transform: "translateY(-100vh) rotate(0deg)",
+            opacity: "0",
+          },
+          "10%": {
+            opacity: "1",
+          },
+          "90%": {
+            opacity: "0.7",
+          },
+          "100%": {
+            transform: "translateY(100vh) rotate(360deg)",
+            opacity: "0",
+          },
+        },
+        "bounce-subtle": {
+          "0%, 100%": {
+            transform: "translateY(0) scale(1)",
+          },
+          "50%": {
+            transform: "translateY(-5px) scale(1.02)",
+          },
+        },
+        "glow": {
+          "0%, 100%": {
+            boxShadow: "0 0 20px hsla(var(--gold), 0.3)",
+          },
+          "50%": {
+            boxShadow: "0 0 30px hsla(var(--gold), 0.6), 0 0 40px hsla(var(--gold), 0.4)",
+          },
+        },
+        "typewriter": {
+          "0%": {
+            width: "0",
+          },
+          "100%": {
+            width: "100%",
+          },
+        },
+        "float": {
+          "0%, 100%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-10px)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fall": "fall linear infinite",
+        "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
+        "glow": "glow 2s ease-in-out infinite",
+        "typewriter": "typewriter 3s steps(40) 1s infinite alternate",
+        "float": "float 3s ease-in-out infinite",
       },
     },
   },
