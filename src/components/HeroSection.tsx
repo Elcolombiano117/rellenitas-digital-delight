@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import QuickOrderDialog from "@/components/QuickOrderDialog";
+import ShoppingCart from "@/components/ShoppingCart";
 import heroBackground from "@/assets/hero-background.jpg";
 import { Cookie } from "lucide-react";
 
 const HeroSection = () => {
   const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [currentSlogan, setCurrentSlogan] = useState(0);
   const [crumbs, setCrumbs] = useState<Array<{ id: number; delay: number; duration: number; left: string }>>([]);
 
@@ -35,6 +37,11 @@ const HeroSection = () => {
 
   const handleOrderNow = () => {
     setIsQuickOrderOpen(true);
+  };
+
+  const handleOpenCart = () => {
+    setIsQuickOrderOpen(false);
+    setIsCartOpen(true);
   };
 
   return (
@@ -125,7 +132,13 @@ const HeroSection = () => {
       <QuickOrderDialog 
         open={isQuickOrderOpen} 
         onOpenChange={setIsQuickOrderOpen}
-        onOpenCart={() => {}}
+        onOpenCart={handleOpenCart}
+      />
+
+      {/* Shopping Cart */}
+      <ShoppingCart 
+        open={isCartOpen} 
+        onOpenChange={setIsCartOpen}
       />
     </section>
   );

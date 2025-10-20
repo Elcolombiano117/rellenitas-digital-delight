@@ -1,6 +1,6 @@
 import { Instagram, MessageCircle } from "lucide-react";
 import logo from "@/assets/new-logo.png";
-import audioCommercial from "@/assets/galletas-del-alma.mp3";
+import videoCommercial from "@/assets/comercial-galletas-rellenitas.mp4";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -27,7 +27,7 @@ const Footer = () => {
             </p>
           </div>
           
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             <div className="bg-white/10 rounded-2xl p-8 backdrop-blur-sm">
               <div className="text-center mb-6">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
@@ -39,10 +39,10 @@ const Footer = () => {
                   "Tradición Rellena de Sabor"
                 </p>
               </div>
-              <audio controls className="w-full bg-white/20 rounded-xl">
-                <source src={audioCommercial} type="audio/mpeg" />
-                Tu navegador no soporta audio HTML5.
-              </audio>
+              <video controls className="w-full rounded-xl shadow-lg">
+                <source src={videoCommercial} type="video/mp4" />
+                Tu navegador no soporta video HTML5.
+              </video>
             </div>
           </div>
         </div>
