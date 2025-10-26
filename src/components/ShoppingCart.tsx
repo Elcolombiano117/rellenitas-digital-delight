@@ -26,7 +26,8 @@ const ShoppingCart = ({ open, onOpenChange }: ShoppingCartProps) => {
   const handleWhatsAppOrder = (formData: any) => {
     if (items.length === 0) return;
 
-    let message = "¡Hola! Quiero pedir Rellenitas 🍪\n\n";
+    let message = "¡Hola! Quiero confirmar mi pedido de Rellenitas 🍪\n\n";
+    message += `📦 *Número de pedido:* ${formData.orderNumber}\n\n`;
     message += "📋 *Mi pedido:*\n";
     
     items.forEach((item) => {
@@ -37,10 +38,16 @@ const ShoppingCart = ({ open, onOpenChange }: ShoppingCartProps) => {
     message += `\n💰 *Total:* ${formatPrice(getTotalPrice())}\n\n`;
     message += "📍 *Datos de entrega:*\n";
     message += `Nombre: ${formData.fullName}\n`;
+    if (formData.email) message += `Email: ${formData.email}\n`;
     message += `Dirección: ${formData.address}\n`;
     message += `Ciudad: ${formData.city}, ${formData.department}\n`;
     message += `Teléfono: ${formData.phone}\n`;
-    message += `💳 Método de pago: ${formData.paymentMethod === 'efectivo' ? 'Efectivo' : 'Transferencia'}`;
+    message += `💳 Método de pago: ${
+      formData.paymentMethod === 'efectivo' ? 'Efectivo' : 
+      formData.paymentMethod === 'transferencia' ? 'Transferencia' : 
+      'Pago en línea'
+    }\n\n`;
+    message += `🔗 Seguir mi pedido: ${window.location.origin}/tracking/${formData.orderId}`;
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/573142621490?text=${encodedMessage}`, "_blank");
