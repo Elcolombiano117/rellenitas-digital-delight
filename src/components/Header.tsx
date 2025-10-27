@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Menu, X, ShoppingCart, LogOut, LogIn, User } from "lucide-react";
+import { Menu, X, ShoppingCart, LogOut, LogIn, User, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import ShoppingCartPanel from "@/components/ShoppingCart";
 import QuickOrderDialog from "@/components/QuickOrderDialog";
 import logo from "@/assets/new-logo.png";
@@ -15,6 +16,7 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { getTotalItems } = useCart();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const totalItems = getTotalItems();
 
@@ -82,6 +84,17 @@ const Header = () => {
 
               {user ? (
                 <div className="flex items-center gap-3 border-l border-border pl-4">
+                  {isAdmin && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => navigate('/admin')}
+                      className="gap-2"
+                    >
+                      <ShieldCheck className="h-4 w-4" />
+                      Admin
+                    </Button>
+                  )}
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-foreground">{user.email}</span>
@@ -171,6 +184,20 @@ const Header = () => {
                 ))}
                 {user && (
                   <div className="border-t border-border pt-2 mt-2">
+                    {isAdmin && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => {
+                          navigate('/admin');
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full gap-2 mb-2"
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                        Panel de Administración
+                      </Button>
+                    )}
                     <div className="px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
                       <User className="h-4 w-4" />
                       {user.email}
