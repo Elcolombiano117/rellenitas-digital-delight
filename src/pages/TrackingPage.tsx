@@ -7,13 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Phone, Mail, CreditCard, Package, CheckCircle, Clock } from "lucide-react";
 
 const statusConfig = {
-  pending: { label: "Pendiente", color: "bg-yellow-500", step: 1 },
-  confirmed: { label: "Confirmado", color: "bg-blue-500", step: 2 },
-  preparing: { label: "Preparando", color: "bg-purple-500", step: 3 },
-  ready: { label: "Listo", color: "bg-green-500", step: 4 },
-  in_delivery: { label: "En camino", color: "bg-indigo-500", step: 5 },
-  delivered: { label: "Entregado", color: "bg-green-600", step: 6 },
-  cancelled: { label: "Cancelado", color: "bg-red-500", step: 0 },
+  pending: { label: "Pedido Recibido", color: "bg-yellow-500", step: 1, icon: Clock, description: "Tu pedido ha sido recibido y está siendo procesado" },
+  preparing: { label: "En Preparación", color: "bg-blue-500", step: 2, icon: Package, description: "Estamos preparando tu pedido con mucho cuidado" },
+  ready: { label: "Listo para Entrega", color: "bg-green-500", step: 3, icon: CheckCircle, description: "Tu pedido está listo para ser entregado o recogido" },
+  in_delivery: { label: "En camino", color: "bg-indigo-500", step: 4, icon: Package, description: "Tu pedido está en camino" },
+  delivered: { label: "Entregado", color: "bg-green-600", step: 5, icon: CheckCircle, description: "Tu pedido ha sido entregado" },
+  cancelled: { label: "Cancelado", color: "bg-red-500", step: 0, icon: Clock, description: "Este pedido ha sido cancelado" },
 };
 
 const TrackingPage = () => {
@@ -133,39 +132,67 @@ const TrackingPage = () => {
         <h1 className="text-3xl font-poppins font-bold mb-2">Seguimiento de Pedido</h1>
         <p className="text-muted-foreground mb-8">Pedido #{order.order_number}</p>
 
-        {/* Status Badge */}
-        <div className="mb-8">
-          <Badge className={`${statusConfig[order.order_status as keyof typeof statusConfig].color} text-white text-lg px-4 py-2`}>
-            {statusConfig[order.order_status as keyof typeof statusConfig].label}
-          </Badge>
-        </div>
+        {/* Status Card */}
+        <Card className="mb-8 border-2">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className={`w-16 h-16 rounded-full ${statusConfig[order.order_status as keyof typeof statusConfig].color} flex items-center justify-center`}>
+                {(() => {
+                  const Icon = statusConfig[order.order_status as keyof typeof statusConfig].icon;
+                  return <Icon className="w-8 h-8 text-white" />;
+                })()}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">
+                  {statusConfig[order.order_status as keyof typeof statusConfig].label}
+                </h2>
+                <p className="text-muted-foreground">
+                  {statusConfig[order.order_status as keyof typeof statusConfig].description}
+                </p>
+              </div>
+            </div>
+            <Badge className={`${statusConfig[order.order_status as keyof typeof statusConfig].color} text-white text-sm px-3 py-1`}>
+              Estado actual
+            </Badge>
+          </CardContent>
+        </Card>
 
         {/* Progress Steps */}
         {order.order_status !== "cancelled" && (
           <Card className="mb-8">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center">
-                {[
-                  { step: 1, label: "Pendiente", icon: Clock },
-                  { step: 2, label: "Confirmado", icon: CheckCircle },
-                  { step: 3, label: "Preparando", icon: Package },
-                  { step: 4, label: "Listo", icon: CheckCircle },
-                  { step: 5, label: "En camino", icon: Package },
-                  { step: 6, label: "Entregado", icon: CheckCircle },
-                ].map(({ step, label, icon: Icon }) => (
-                  <div key={step} className="flex flex-col items-center flex-1">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
-                        currentStep >= step ? "bg-primary text-white" : "bg-gray-200 text-gray-400"
-                      }`}
-                    >
-                      <Icon className="w-6 h-6" />
+            <CardContent className="p-8">
+              <div className="relative">
+                <div className="absolute top-8 left-0 right-0 h-1 bg-border"></div>
+                <div 
+                  className="absolute top-8 left-0 h-1 bg-primary transition-all duration-500"
+                  style={{ width: `${((currentStep - 1) / 4) * 100}%` }}
+                ></div>
+                <div className="relative flex justify-between">
+                  {[
+                    { step: 1, label: "Recibido", icon: Clock },
+                    { step: 2, label: "Preparando", icon: Package },
+                    { step: 3, label: "Listo", icon: CheckCircle },
+                    { step: 4, label: "En camino", icon: Package },
+                    { step: 5, label: "Entregado", icon: CheckCircle },
+                  ].map(({ step, label, icon: Icon }) => (
+                    <div key={step} className="flex flex-col items-center">
+                      <div
+                        className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 border-4 border-background transition-all duration-300 ${
+                          currentStep >= step 
+                            ? "bg-primary text-white scale-110 shadow-lg" 
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <Icon className="w-7 h-7" />
+                      </div>
+                      <p className={`text-sm text-center font-medium max-w-[80px] ${
+                        currentStep >= step ? "text-foreground" : "text-muted-foreground"
+                      }`}>
+                        {label}
+                      </p>
                     </div>
-                    <p className={`text-xs text-center ${currentStep >= step ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
-                      {label}
-                    </p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

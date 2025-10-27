@@ -23,9 +23,9 @@ interface Order {
 }
 
 const statusConfig = {
-  pending: { label: "Pendiente", color: "bg-yellow-500", icon: Clock },
-  confirmed: { label: "Confirmado", color: "bg-blue-500", icon: CheckCircle },
-  preparing: { label: "Preparando", color: "bg-purple-500", icon: Package },
+  pending: { label: "Pendiente", color: "bg-yellow-500 text-white", icon: Clock, next: "preparing" },
+  preparing: { label: "En Preparación", color: "bg-blue-500 text-white", icon: Package, next: "ready" },
+  ready: { label: "Listo", color: "bg-green-500 text-white", icon: CheckCircle, next: null },
 };
 
 export const KitchenDisplay = () => {
@@ -66,7 +66,7 @@ export const KitchenDisplay = () => {
           *,
           order_items (*)
         `)
-        .in('order_status', ['pending', 'confirmed', 'preparing'])
+        .in('order_status', ['pending', 'preparing', 'ready'])
         .order("created_at", { ascending: true });
 
       if (error) throw error;
@@ -164,33 +164,43 @@ export const KitchenDisplay = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {orders.map((order) => {
-            const StatusIcon = statusConfig[order.order_status as keyof typeof statusConfig]?.icon || Clock;
-            const statusColor = statusConfig[order.order_status as keyof typeof statusConfig]?.color || "bg-gray-500";
+            const config = statusConfig[order.order_status as keyof typeof statusConfig];
+            if (!config) return null;
+            
+            const StatusIcon = config.icon;
             
             return (
-              <Card key={order.id} className="p-6 border-2 hover:border-primary transition-colors">
+              <Card 
+                key={order.id} 
+                className="p-6 border-2 hover:border-primary transition-all cursor-pointer active:scale-95"
+                onClick={() => {
+                  if (config.next) {
+                    updateOrderStatus(order.id, config.next);
+                  }
+                }}
+              >
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h2 className="text-3xl font-bold text-primary mb-1">
+                    <h2 className="text-4xl font-bold text-primary mb-2">
                       #{order.order_number}
                     </h2>
-                    <p className="text-lg font-semibold text-foreground">
+                    <p className="text-xl font-semibold text-foreground">
                       {order.customer_name}
                     </p>
                   </div>
-                  <Badge className={`${statusColor} text-white px-3 py-1 text-sm`}>
-                    <StatusIcon className="w-4 h-4 mr-1" />
-                    {statusConfig[order.order_status as keyof typeof statusConfig]?.label || order.order_status}
+                  <Badge className={`${config.color} px-4 py-2 text-base`}>
+                    <StatusIcon className="w-5 h-5 mr-2" />
+                    {config.label}
                   </Badge>
                 </div>
 
                 <div className="mb-4 space-y-2">
                   {order.order_items?.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center bg-muted/50 p-3 rounded-md">
-                      <span className="text-lg font-medium text-foreground">
+                    <div key={idx} className="flex justify-between items-center bg-muted/50 p-4 rounded-lg">
+                      <span className="text-xl font-medium text-foreground">
                         {item.product_name}
                       </span>
-                      <span className="text-xl font-bold text-primary">
+                      <span className="text-2xl font-bold text-primary">
                         x{item.quantity}
                       </span>
                     </div>
@@ -198,52 +208,29 @@ export const KitchenDisplay = () => {
                 </div>
 
                 {order.notes && (
-                  <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-                    <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
-                      Nota del cliente:
+                  <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-300 dark:border-yellow-700 rounded-lg">
+                    <p className="text-base font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                      📝 Nota del cliente:
                     </p>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                    <p className="text-base text-yellow-700 dark:text-yellow-300">
                       {order.notes}
                     </p>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-base text-muted-foreground font-medium">
                     {formatTime(order.created_at)}
                   </span>
                 </div>
 
-                <div className="flex gap-2">
-                  {order.order_status === 'pending' && (
-                    <Button
-                      onClick={() => updateOrderStatus(order.id, 'confirmed')}
-                      className="flex-1"
-                      variant="default"
-                    >
-                      Confirmar
-                    </Button>
-                  )}
-                  {order.order_status === 'confirmed' && (
-                    <Button
-                      onClick={() => updateOrderStatus(order.id, 'preparing')}
-                      className="flex-1"
-                      variant="default"
-                    >
-                      Preparando
-                    </Button>
-                  )}
-                  {order.order_status === 'preparing' && (
-                    <Button
-                      onClick={() => updateOrderStatus(order.id, 'ready')}
-                      className="flex-1"
-                      variant="default"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Listo
-                    </Button>
-                  )}
-                </div>
+                {config.next && (
+                  <div className="text-center p-4 bg-primary/10 rounded-lg border-2 border-dashed border-primary">
+                    <p className="text-lg font-semibold text-primary">
+                      👆 Toca para cambiar a: {statusConfig[config.next as keyof typeof statusConfig]?.label}
+                    </p>
+                  </div>
+                )}
               </Card>
             );
           })}
