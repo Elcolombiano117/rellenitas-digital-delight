@@ -1,7 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Phone } from "lucide-react";
+import { MessageCircle, Phone, Search } from "lucide-react";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const OrderSection = () => {
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   const handleWhatsAppOrder = () => {
     // Generate a unique order ID for tracking
     const orderId = `REL${Date.now().toString().slice(-6)}`;
@@ -16,6 +25,45 @@ const OrderSection = () => {
 
   const handleCallOrder = () => {
     window.open("tel:+573142621490", "_self");
+  };
+
+  const handleTrackOrder = async () => {
+    if (!trackingNumber.trim()) {
+      toast({
+        title: "Número requerido",
+        description: "Por favor ingresa tu número de pedido",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Verificar si el pedido existe
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("order_number", trackingNumber.trim())
+        .single();
+
+      if (error || !data) {
+        toast({
+          title: "Pedido no encontrado",
+          description: "No se encontró un pedido con ese número. Verifica e intenta nuevamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Navegar a la página de tracking
+      navigate(`/seguimiento/${data.id}`);
+    } catch (error) {
+      console.error("Error tracking order:", error);
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al buscar tu pedido. Intenta nuevamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -91,6 +139,37 @@ const OrderSection = () => {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Track Your Order Section */}
+          <div className="bg-gradient-to-br from-secondary/20 to-primary/10 rounded-2xl p-8 mt-8">
+            <h3 className="text-2xl font-poppins font-bold text-foreground text-center mb-4">
+              🔍 ¿Ya hiciste tu pedido?
+            </h3>
+            <p className="text-muted-foreground font-lato text-center mb-6">
+              Consulta el estado de tu pedido en tiempo real
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <Input
+                type="text"
+                placeholder="Ej: REL001"
+                value={trackingNumber}
+                onChange={(e) => setTrackingNumber(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleTrackOrder()}
+                className="flex-1 text-lg py-6"
+              />
+              <Button 
+                onClick={handleTrackOrder}
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 py-6 rounded-xl"
+              >
+                <Search className="w-5 h-5 mr-2" />
+                Rastrear
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground font-lato text-center mt-4">
+              Ingresa el número de pedido que te enviamos por WhatsApp
+            </p>
           </div>
         </div>
       </div>

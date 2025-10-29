@@ -23,9 +23,34 @@ interface Order {
 }
 
 const statusConfig = {
-  pending: { label: "Pendiente", color: "bg-yellow-500 text-white", icon: Clock, next: "preparing" },
-  preparing: { label: "En Preparación", color: "bg-blue-500 text-white", icon: Package, next: "ready" },
-  ready: { label: "Listo", color: "bg-green-500 text-white", icon: CheckCircle, next: null },
+  pending: { 
+    label: "Pendiente", 
+    color: "bg-yellow-500 text-white hover:bg-yellow-600", 
+    icon: Clock, 
+    next: "preparing",
+    instruction: "Toca para marcar En Preparación"
+  },
+  preparing: { 
+    label: "En Preparación", 
+    color: "bg-blue-500 text-white hover:bg-blue-600", 
+    icon: Package, 
+    next: "ready",
+    instruction: "Toca para marcar Listo"
+  },
+  ready: { 
+    label: "Listo para Entrega/Recogida", 
+    color: "bg-green-500 text-white hover:bg-green-600", 
+    icon: CheckCircle, 
+    next: "in_delivery",
+    instruction: "Toca para marcar En Entrega"
+  },
+  in_delivery: {
+    label: "En Entrega",
+    color: "bg-purple-500 text-white hover:bg-purple-600",
+    icon: Package,
+    next: "delivered",
+    instruction: "Toca para marcar Entregado"
+  }
 };
 
 export const KitchenDisplay = () => {
@@ -66,7 +91,7 @@ export const KitchenDisplay = () => {
           *,
           order_items (*)
         `)
-        .in('order_status', ['pending', 'preparing', 'ready'])
+        .in('order_status', ['pending', 'preparing', 'ready', 'in_delivery'])
         .order("created_at", { ascending: true });
 
       if (error) throw error;
@@ -227,7 +252,7 @@ export const KitchenDisplay = () => {
                 {config.next && (
                   <div className="text-center p-4 bg-primary/10 rounded-lg border-2 border-dashed border-primary">
                     <p className="text-lg font-semibold text-primary">
-                      👆 Toca para cambiar a: {statusConfig[config.next as keyof typeof statusConfig]?.label}
+                      👆 {config.instruction}
                     </p>
                   </div>
                 )}

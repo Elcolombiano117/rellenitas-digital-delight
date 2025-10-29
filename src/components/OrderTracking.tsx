@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Package, Truck, Heart, MapPin, Clock, Gift } from "lucide-react";
+import { CheckCircle, Package, Truck, Heart, MapPin, Clock, Gift, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OrderTrackingProps {
   orderId: string;
@@ -11,23 +12,45 @@ interface OrderTrackingProps {
 
 const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTrackingProps) => {
   const [currentStage, setCurrentStage] = useState(1);
+  const [orderStatus, setOrderStatus] = useState<string>("pending");
   const [showShareModal, setShowShareModal] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState(15);
   const [showConfetti, setShowConfetti] = useState(false);
 
+  // Map database status to stage number
+  const statusToStage: { [key: string]: number } = {
+    pending: 1,
+    preparing: 2,
+    ready: 3,
+    in_delivery: 4,
+    delivered: 5
+  };
+
   const stages = [
     {
       id: 1,
+      status: "pending",
+      title: "PEDIDO RECIBIDO",
+      subtitle: "¡TU PEDIDO ESTÁ EN COLA!",
+      icon: Clock,
+      description: "Tu pedido ha sido recibido y está esperando para ser preparado. En breve comenzaremos a trabajar en tu Rellenita.",
+      color: "from-yellow-400 to-yellow-500",
+      animation: "animate-pulse"
+    },
+    {
+      id: 2,
+      status: "preparing",
       title: "EN PREPARACIÓN",
       subtitle: "¡TU RELLENITA ESTÁ NACIENDO!",
-      icon: Heart,
+      icon: ChefHat,
       description: "Tu Rellenita está naciendo. Cada capa se hace con amor, no con máquinas. El relleno se derrite perfectamente mientras esperamos el momento ideal.",
       color: "from-primary to-primary-glow",
       animation: "animate-pulse"
     },
     {
-      id: 2,
-      title: "EN EMPAQUE",
+      id: 3,
+      status: "ready",
+      title: "LISTA PARA ENTREGA",
       subtitle: "¡EMPACADA CON CARIÑO!",
       icon: Package,
       description: `Empacada con cariño y lista para salir… ${dedicatoria ? `Con tu dedicatoria especial: "${dedicatoria}"` : 'Perfectamente preparada en nuestra caja especial.'}`,
@@ -35,7 +58,8 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
       animation: "animate-bounce"
     },
     {
-      id: 3,
+      id: 4,
+      status: "in_delivery",
       title: "EN CAMINO",
       subtitle: "¡EL REPARTIDOR VA POR TI!",
       icon: Truck,
@@ -44,8 +68,9 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
       animation: "animate-pulse"
     },
     {
-      id: 4,
-      title: "¡LLEGÓ!",
+      id: 5,
+      status: "delivered",
+      title: "¡ENTREGADO!",
       subtitle: "¡TU MOMENTO DULCE HA LLEGADO!",
       icon: CheckCircle,
       description: "Tu momento dulce ha llegado… ¡Disfrútala! Cada bocado es una pequeña celebración.",
@@ -54,29 +79,67 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
     }
   ];
 
+  // Fetch order status from database
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentStage(prev => {
-        if (prev < 4) {
-          const newStage = prev + 1;
-          if (newStage === 4) {
+    const fetchOrderStatus = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("order_status")
+          .eq("id", orderId)
+          .single();
+
+        if (error) throw error;
+        
+        if (data) {
+          setOrderStatus(data.order_status);
+          setCurrentStage(statusToStage[data.order_status] || 1);
+          
+          if (data.order_status === "delivered") {
+            setShowConfetti(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching order status:", error);
+      }
+    };
+
+    fetchOrderStatus();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel(`order-${orderId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${orderId}`
+        },
+        (payload) => {
+          const newStatus = payload.new.order_status;
+          setOrderStatus(newStatus);
+          setCurrentStage(statusToStage[newStatus] || 1);
+          
+          if (newStatus === "delivered") {
             setShowConfetti(true);
             // Play bell sound
             const audio = new Audio('data:audio/wav;base64,UklGRvQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YdADAAAA');
             audio.play().catch(() => {}); // Ignore errors if audio fails
           }
-          return newStage;
         }
-        return prev;
-      });
-    }, 6000); // Change stage every 6 seconds for demo
+      )
+      .subscribe();
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderId]);
 
   // Timer for estimated delivery time
   useEffect(() => {
-    if (currentStage === 3) {
+    if (currentStage === 4) {
       const timer = setInterval(() => {
         setEstimatedTime(prev => Math.max(1, prev - 1));
       }, 60000); // Update every minute
@@ -164,9 +227,14 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
           <h1 className="text-3xl sm:text-4xl font-poppins font-bold text-chocolate mb-2">
             El Camino de tu <span className="text-primary">Rellenita</span>
           </h1>
-          <p className="text-chocolate/70 font-lato">
+          <p className="text-chocolate/70 font-lato mb-4">
             Pedido #{orderId} • Para {customerName}
           </p>
+          {/* Estado actual destacado */}
+          <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border-2 border-primary/20">
+            <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${currentStageData.color} animate-pulse`}></div>
+            <span className="font-semibold text-chocolate">Estado: {currentStageData.title}</span>
+          </div>
         </div>
 
         {/* Progress Bar */}
@@ -219,6 +287,12 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
             {/* Special interactions per stage */}
             {currentStage === 1 && (
               <div className="space-y-4">
+                <div className="bg-gradient-to-r from-beige to-white p-6 rounded-2xl border border-chocolate/10">
+                  <div className="text-4xl mb-3">⏳</div>
+                  <p className="text-sm text-chocolate/70 font-lato">
+                    Tu pedido está en cola. En breve comenzaremos a preparar tu Rellenita con amor.
+                  </p>
+                </div>
                 <Button 
                   onClick={handleWhatsAppDedication}
                   variant="outline" 
@@ -234,6 +308,18 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
             )}
 
             {currentStage === 2 && (
+              <div className="space-y-4">
+                <GalletaAnimation />
+                <div className="bg-gradient-to-r from-beige to-white p-6 rounded-2xl border border-chocolate/10">
+                  <div className="text-4xl mb-3">👨‍🍳</div>
+                  <p className="text-sm text-chocolate/70 font-lato">
+                    Nuestro chef está preparando tu Rellenita. Cada capa se hace con dedicación.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {currentStage === 3 && (
               <div className="space-y-4">
                 <div className="bg-gradient-to-r from-beige to-white p-6 rounded-2xl border border-chocolate/10">
                   <div className="text-4xl mb-3">📦</div>
@@ -252,13 +338,13 @@ const OrderTracking = ({ orderId, customerName = "amigo", dedicatoria }: OrderTr
               </div>
             )}
 
-            {currentStage === 3 && (
+            {currentStage === 4 && (
               <div className="mt-6">
                 <MapAnimation />
               </div>
             )}
 
-            {currentStage === 4 && (
+            {currentStage === 5 && (
               <div className="space-y-4">
                 <div className="bg-gradient-to-r from-beige to-white p-6 rounded-2xl">
                   <div className="text-6xl animate-bounce mb-4">🍫</div>
