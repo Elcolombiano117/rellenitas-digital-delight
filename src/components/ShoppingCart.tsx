@@ -26,6 +26,8 @@ const ShoppingCart = ({ open, onOpenChange }: ShoppingCartProps) => {
   const handleWhatsAppOrder = (formData: any) => {
     if (items.length === 0) return;
 
+     console.log("handleWhatsAppOrder called with:", formData);
+   
     let message = "¡Hola! Quiero confirmar mi pedido de Rellenitas 🍪\n\n";
     message += `📦 *Número de pedido:* ${formData.orderNumber}\n\n`;
     message += "📋 *Mi pedido:*\n";
@@ -49,8 +51,22 @@ const ShoppingCart = ({ open, onOpenChange }: ShoppingCartProps) => {
     }\n\n`;
     message += `🔗 Seguir mi pedido: ${window.location.origin}/tracking/${formData.orderId}`;
 
+     console.log("WhatsApp message:", message);
+   
     const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/573142621490?text=${encodedMessage}`, "_blank");
+     const whatsappUrl = `https://wa.me/573142621490?text=${encodedMessage}`;
+   
+     console.log("Opening WhatsApp URL:", whatsappUrl);
+   
+     // Intentar abrir en una nueva ventana
+     const whatsappWindow = window.open(whatsappUrl, "_blank");
+   
+     if (!whatsappWindow) {
+       console.error("Failed to open WhatsApp window - popup might be blocked");
+       // Intentar abrir en la misma pestaña como fallback
+       window.location.href = whatsappUrl;
+       return;
+     }
     
     clearCart();
     setShowCheckout(false);

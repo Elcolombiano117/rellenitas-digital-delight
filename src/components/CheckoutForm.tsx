@@ -121,6 +121,8 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
       
       const finalTotal = totalPrice - couponDiscount;
       
+       console.log("Creating order with data:", { orderNumber, finalTotal, items });
+     
       // Create order in database
       const { data: order, error: orderError } = await supabase
         .from("orders")
@@ -145,6 +147,8 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
         .single();
 
       if (orderError) throw orderError;
+     
+       console.log("Order created successfully:", order);
 
       // Create order items
       const orderItems = items.map(item => ({
@@ -173,6 +177,8 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
         description: `Número de pedido: ${orderNumber}`,
       });
 
+       console.log("Calling onConfirm with:", { ...data, orderNumber, orderId: order.id });
+     
       // Pass order data to WhatsApp confirmation
       onConfirm({ ...data, orderNumber, orderId: order.id });
       
