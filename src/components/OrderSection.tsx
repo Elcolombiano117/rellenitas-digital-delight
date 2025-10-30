@@ -10,6 +10,8 @@ const OrderSection = () => {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [showProgress, setShowProgress] = useState(false);
   const [progressStage, setProgressStage] = useState<1 | 2 | 3>(1);
+  const [trackedOrderId, setTrackedOrderId] = useState<string | null>(null);
+  const [currentStatus, setCurrentStatus] = useState<'pending' | 'preparing' | 'ready' | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -64,7 +66,7 @@ const OrderSection = () => {
       // Verificar si el pedido existe
       const { data, error } = await supabase
         .from("orders")
-        .select("id")
+        .select("id, order_status")
         .eq("order_number", trackingNumber.trim())
         .single();
 
@@ -77,8 +79,13 @@ const OrderSection = () => {
         return;
       }
 
-      // Navegar a la página de tracking
-      navigate(`/seguimiento/${data.id}`);
+      // Mostrar barra de progreso con datos reales
+      setTrackedOrderId(data.id);
+      setShowProgress(true);
+      setCurrentStatus(data.order_status as 'pending' | 'preparing' | 'ready');
+      // Mapear estado a etapa
+      const map: Record<string, 1 | 2 | 3> = { pending: 1, preparing: 2, ready: 3 };
+      setProgressStage(map[data.order_status] ?? 1);
     } catch (error) {
       console.error("Error tracking order:", error);
       toast({
@@ -88,6 +95,34 @@ const OrderSection = () => {
       });
     }
   };
+
+  // Suscripción en tiempo real al estado del pedido rastreado
+  useEffect(() => {
+    if (!trackedOrderId) return;
+
+    const channel = supabase
+      .channel(`order-progress-${trackedOrderId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${trackedOrderId}`
+        },
+        (payload) => {
+          const status = (payload.new as any).order_status as 'pending' | 'preparing' | 'ready' | 'in_delivery' | 'delivered';
+          setCurrentStatus(status as any);
+          const map: Record<string, 1 | 2 | 3> = { pending: 1, preparing: 2, ready: 3 };
+          if (status in map) setProgressStage(map[status]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [trackedOrderId]);
 
   return (
     <section id="pedidos" className="py-16 sm:py-20 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
@@ -221,7 +256,7 @@ const OrderSection = () => {
                 placeholder="Ej: REL001"
                 value={trackingNumber}
                 onChange={(e) => setTrackingNumber(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleTrackOrder()}
+                onKeyDown={(e) => e.key === "Enter" && handleTrackOrder()}
                 className="flex-1 text-lg py-6"
               />
               <Button 
@@ -236,6 +271,55 @@ const OrderSection = () => {
             <p className="text-xs text-muted-foreground font-lato text-center mt-4">
               Ingresa el número de pedido que te enviamos por WhatsApp
             </p>
+
+            {/* Si hay seguimiento en vivo, mostrar también la barra encima */}
+            {showProgress && (
+              <div className="mt-8">
+                <div className="mb-3 text-center text-sm text-muted-foreground">
+                  {trackedOrderId ? (
+                    <span>Seguimiento en vivo activado para el pedido <strong>{trackingNumber}</strong></span>
+                  ) : (
+                    <span>Progreso simulado</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between mb-4">
+                  {[
+                    { id: 1 as const, label: "Pedido recibido", Icon: Clock },
+                    { id: 2 as const, label: "En preparación", Icon: ChefHat },
+                    { id: 3 as const, label: "Listo para entrega", Icon: CheckCircle },
+                  ].map(({ id, label, Icon }) => (
+                    <div key={id} className="flex flex-col items-center w-1/3">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                        progressStage >= id ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className={`mt-2 text-xs font-medium text-center ${
+                        progressStage >= id ? 'text-foreground' : 'text-muted-foreground'
+                      }`}>
+                        {label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-700"
+                    style={{ width: `${(progressStage / 3) * 100}%` }}
+                  />
+                </div>
+                {trackedOrderId && (
+                  <div className="text-center mt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => window.open(`/seguimiento/${trackedOrderId}`, '_blank')}
+                    >
+                      Ver seguimiento completo
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
