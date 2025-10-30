@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Phone, Search } from "lucide-react";
-import { useState } from "react";
+import { MessageCircle, Phone, Search, Clock, ChefHat, CheckCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 const OrderSection = () => {
   const [trackingNumber, setTrackingNumber] = useState("");
+  const [showProgress, setShowProgress] = useState(false);
+  const [progressStage, setProgressStage] = useState<1 | 2 | 3>(1);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -21,11 +23,32 @@ const OrderSection = () => {
     }, 2000);
     
     window.open("https://wa.me/573142621490?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");
+
+    // Mostrar barra de progreso local (simulada)
+    setShowProgress(true);
+    setProgressStage(1); // Pedido recibido
   };
 
   const handleCallOrder = () => {
     window.open("tel:+573142621490", "_self");
   };
+
+  // Avance automático del progreso local (simulación)
+  useEffect(() => {
+    if (!showProgress) return;
+
+    let timeoutId: number | undefined;
+    if (progressStage === 1) {
+      // Pasar de Pedido recibido -> En preparación
+      timeoutId = window.setTimeout(() => setProgressStage(2), 5000);
+    } else if (progressStage === 2) {
+      // Pasar de En preparación -> Listo para entrega
+      timeoutId = window.setTimeout(() => setProgressStage(3), 8000);
+    }
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [showProgress, progressStage]);
 
   const handleTrackOrder = async () => {
     if (!trackingNumber.trim()) {
@@ -90,6 +113,49 @@ const OrderSection = () => {
               📱 ¡Habla con nosotros por WhatsApp!
             </Button>
           </div>
+
+          {/* Barra de progreso del pedido (local/simulada) */}
+          {showProgress && (
+            <div className="mb-10 bg-card/80 backdrop-blur-sm rounded-2xl p-6 border border-border">
+              <h3 className="text-xl font-poppins font-semibold text-foreground mb-4 text-center">
+                Estado de tu pedido
+              </h3>
+
+              {/* Steps */}
+              <div className="flex items-center justify-between mb-4">
+                {[
+                  { id: 1 as const, label: "Pedido recibido", Icon: Clock },
+                  { id: 2 as const, label: "En preparación", Icon: ChefHat },
+                  { id: 3 as const, label: "Listo para entrega", Icon: CheckCircle },
+                ].map(({ id, label, Icon }) => (
+                  <div key={id} className="flex flex-col items-center w-1/3">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                      progressStage >= id ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className={`mt-2 text-xs font-medium text-center ${
+                      progressStage >= id ? 'text-foreground' : 'text-muted-foreground'
+                    }`}>
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Linear progress */}
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-700"
+                  style={{ width: `${(progressStage / 3) * 100}%` }}
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center mt-3">
+                Este progreso es de referencia. Para seguimiento en tiempo real, usa tu número de pedido.
+              </p>
+            </div>
+          )}
           
           {/* Alternative - Call Button */}
           <div className="text-center mb-8">
