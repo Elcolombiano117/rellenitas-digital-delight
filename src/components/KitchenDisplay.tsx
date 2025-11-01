@@ -122,6 +122,7 @@ export const KitchenDisplay = () => {
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
+      // Actualizar el estado del pedido
       const { error } = await supabase
         .from("orders")
         .update({ order_status: newStatus })
@@ -129,25 +130,29 @@ export const KitchenDisplay = () => {
 
       if (error) throw error;
 
+      // Obtener la sesión actual para registrar quién hizo el cambio
+      const { data: { session } } = await supabase.auth.getSession();
+
+      // Registrar el cambio en el historial
       await supabase.from("order_status_history").insert({
         order_id: orderId,
         status: newStatus,
-        notes: `Estado actualizado desde cocina`,
+        changed_by: session?.user?.id || null,
+        created_at: new Date().toISOString()
       });
 
-      toast({
-        title: "Estado actualizado",
-        description: `Pedido marcado como ${statusConfig[newStatus as keyof typeof statusConfig]?.label || newStatus}`,
-      });
-
-      fetchOrders();
+      // Actualizar el estado local inmediatamente
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...order, order_status: newStatus }
+            : order
+        ).filter(order => 
+          ['pending', 'preparing', 'ready', 'in_delivery'].includes(order.order_status)
+        )
+      );
     } catch (error) {
       console.error("Error updating order:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar el estado",
-        variant: "destructive",
-      });
     }
   };
 
