@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dashboard } from "@/components/admin/Dashboard";
 import { OrdersManagement } from "@/components/admin/OrdersManagement";
 import { CouponsManagement } from "@/components/admin/CouponsManagement";
-import { LayoutDashboard, ShoppingCart, Tag } from "lucide-react";
+import { RolesManagement } from "@/components/admin/RolesManagement";
+import { LayoutDashboard, ShoppingCart, Tag, Shield } from "lucide-react";
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const AdminPage = () => {
         </h1>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <LayoutDashboard className="w-4 h-4" />
               <span className="hidden sm:inline">Dashboard</span>
@@ -54,6 +55,10 @@ const AdminPage = () => {
             <TabsTrigger value="coupons" className="flex items-center gap-2">
               <Tag className="w-4 h-4" />
               <span className="hidden sm:inline">Cupones</span>
+            </TabsTrigger>
+            <TabsTrigger value="roles" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              <span className="hidden sm:inline">Roles</span>
             </TabsTrigger>
           </TabsList>
 
@@ -67,6 +72,10 @@ const AdminPage = () => {
 
           <TabsContent value="coupons" className="space-y-4">
             <CouponsManagement />
+          </TabsContent>
+
+          <TabsContent value="roles" className="space-y-4">
+            <RolesManagement />
           </TabsContent>
         </Tabs>
       </main>
