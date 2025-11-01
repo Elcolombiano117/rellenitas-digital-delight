@@ -146,11 +146,13 @@ export const OrdersManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-poppins font-bold">Gestión de Pedidos</h2>
+    <div className="p-5 bg-slate-50 border border-slate-200 rounded-lg mt-10">
+      <h2 className="text-2xl font-poppins font-bold mb-6">Panel de Administración</h2>
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h3 className="text-xl font-semibold">Gestión de Pedidos</h3>
         <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48 py-1.5 px-2 rounded border border-slate-300">
             <SelectValue placeholder="Filtrar por estado" />
           </SelectTrigger>
           <SelectContent>
@@ -165,83 +167,146 @@ export const OrdersManagement = () => {
         </Select>
       </div>
 
-      <div className="grid gap-4">
+      <div className="space-y-4">
         {orders.length === 0 ? (
           <Card className="p-8 text-center text-muted-foreground">
             No hay pedidos que mostrar
           </Card>
         ) : (
-          <div className="bg-card rounded-lg border border-border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Número</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {orders.map((order) => {
-                  const StatusIcon = statusConfig[order.order_status as keyof typeof statusConfig].icon;
-                  return (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono text-sm">
-                        {order.order_number}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-semibold">{order.customer_name}</div>
-                          <div className="text-sm text-muted-foreground">{order.customer_phone}</div>
+          <>
+            {/* Vista móvil - Tarjetas */}
+            <div className="block lg:hidden space-y-4">
+              {orders.map((order) => {
+                const StatusIcon = statusConfig[order.order_status as keyof typeof statusConfig].icon;
+                return (
+                  <div 
+                    key={order.id} 
+                    className="mb-4 p-3 border border-slate-300 rounded-md bg-white"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="font-mono text-sm font-bold">
+                          {order.order_number}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {order.order_items?.map((item: any, idx: number) => (
-                            <div key={idx}>
-                              {item.product_name} x{item.quantity}
-                            </div>
-                          ))}
+                        <div className="font-semibold mt-1">{order.customer_name}</div>
+                        <div className="text-sm text-muted-foreground">{order.customer_phone}</div>
+                      </div>
+                      <Badge className={statusConfig[order.order_status as keyof typeof statusConfig].color}>
+                        <StatusIcon className="w-3 h-3 mr-1" />
+                        {statusConfig[order.order_status as keyof typeof statusConfig].label}
+                      </Badge>
+                    </div>
+                    
+                    <div className="text-sm mb-3 space-y-1">
+                      {order.order_items?.map((item: any, idx: number) => (
+                        <div key={idx}>
+                          {item.product_name} x{item.quantity}
                         </div>
-                      </TableCell>
-                      <TableCell className="font-semibold">
+                      ))}
+                    </div>
+                    
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-semibold">
                         {formatPrice(order.total_amount)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={statusConfig[order.order_status as keyof typeof statusConfig].color}>
-                          <StatusIcon className="w-3 h-3 mr-1" />
-                          {statusConfig[order.order_status as keyof typeof statusConfig].label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      </span>
+                      <span className="text-sm text-muted-foreground">
                         {formatDate(order.created_at)}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={order.order_status}
-                          onValueChange={(value) => updateOrderStatus(order.id, value)}
-                        >
-                          <SelectTrigger className="w-40">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(statusConfig).map(([key, config]) => (
-                              <SelectItem key={key} value={key}>
-                                {config.label}
-                              </SelectItem>
+                      </span>
+                    </div>
+                    
+                    <Select
+                      value={order.order_status}
+                      onValueChange={(value) => updateOrderStatus(order.id, value)}
+                    >
+                      <SelectTrigger className="w-full py-1.5 px-2 rounded border border-slate-300">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(statusConfig).map(([key, config]) => (
+                          <SelectItem key={key} value={key}>
+                            {config.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Vista desktop - Tabla */}
+            <div className="hidden lg:block bg-white rounded-lg border border-slate-300 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Número</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Items</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {orders.map((order) => {
+                    const StatusIcon = statusConfig[order.order_status as keyof typeof statusConfig].icon;
+                    return (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-mono text-sm">
+                          {order.order_number}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-semibold">{order.customer_name}</div>
+                            <div className="text-sm text-muted-foreground">{order.customer_phone}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {order.order_items?.map((item: any, idx: number) => (
+                              <div key={idx}>
+                                {item.product_name} x{item.quantity}
+                              </div>
                             ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {formatPrice(order.total_amount)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={statusConfig[order.order_status as keyof typeof statusConfig].color}>
+                            <StatusIcon className="w-3 h-3 mr-1" />
+                            {statusConfig[order.order_status as keyof typeof statusConfig].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatDate(order.created_at)}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={order.order_status}
+                            onValueChange={(value) => updateOrderStatus(order.id, value)}
+                          >
+                            <SelectTrigger className="w-40 py-1.5 px-2 rounded border border-slate-300">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(statusConfig).map(([key, config]) => (
+                                <SelectItem key={key} value={key}>
+                                  {config.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </div>
     </div>
