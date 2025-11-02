@@ -32,12 +32,31 @@ export const useAuth = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+
+      // Check if user is admin
+      if (data.user) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        if (roleData) {
+          toast({
+            title: "¡Bienvenido Administrador!",
+            description: "Redirigiendo al panel de control...",
+          });
+          navigate('/admin');
+          return;
+        }
+      }
 
       toast({
         title: "¡Bienvenido de nuevo!",
