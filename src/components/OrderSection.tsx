@@ -21,10 +21,11 @@ const OrderSection = () => {
     
     // For demo purposes, we'll open tracking after a short delay
     setTimeout(() => {
-      window.open(`/seguimiento/${orderId}`, "_blank");
+      window.open(`/tracking/${orderId}`, "_blank");
     }, 2000);
     
-    window.open("https://wa.me/573142621490?text=¡Hola! Quiero pedir Rellenitas 😊", "_blank");
+  const waText = `¡Hola! Quiero pedir Rellenitas 😊`;
+  window.open(`https://wa.me/573142621490?text=${encodeURIComponent(waText)}`, "_blank");
 
     // Mostrar barra de progreso local (simulada)
     setShowProgress(true);
@@ -308,16 +309,16 @@ const OrderSection = () => {
                     style={{ width: `${(progressStage / 3) * 100}%` }}
                   />
                 </div>
-                {trackedOrderId && (
-                  <div className="text-center mt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => window.open(`/seguimiento/${trackedOrderId}`, '_blank')}
-                    >
-                      Ver seguimiento completo
-                    </Button>
-                  </div>
-                )}
+                    {trackedOrderId && (
+                      <div className="text-center mt-4">
+                        <Button
+                          variant="outline"
+                          onClick={() => window.open(`/tracking/${trackedOrderId}`, '_blank')}
+                        >
+                          Ver seguimiento completo
+                        </Button>
+                      </div>
+                    )}
               </div>
             )}
           </div>

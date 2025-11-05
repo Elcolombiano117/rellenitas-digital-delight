@@ -145,10 +145,18 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
         })
         .select()
         .single();
+      if (orderError) {
+        console.error("Order creation error from Supabase:", orderError);
+        throw orderError;
+      }
 
-      if (orderError) throw orderError;
-     
-       console.log("Order created successfully:", order);
+      // Ensure we have the created order and an id
+      if (!order || !(order as any).id) {
+        console.error("Order insert did not return an id:", order);
+        throw new Error("No se recibió el id del pedido después de crear la orden.");
+      }
+
+      console.log("Order created successfully:", order);
 
       // Create order items
       const orderItems = items.map(item => ({
@@ -163,7 +171,10 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
         .from("order_items")
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error("Error inserting order items:", itemsError);
+        throw itemsError;
+      }
 
       // Create initial status history
       await supabase.from("order_status_history").insert({
@@ -184,9 +195,10 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
       
     } catch (error) {
       console.error("Error creating order:", error);
+      const message = (error as any)?.message || String(error);
       toast({
         title: "Error al procesar el pedido",
-        description: "Por favor intenta nuevamente",
+        description: message || "Por favor intenta nuevamente",
         variant: "destructive",
       });
     } finally {
