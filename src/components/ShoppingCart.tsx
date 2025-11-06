@@ -53,13 +53,11 @@ const ShoppingCart = ({ open, onOpenChange }: ShoppingCartProps) => {
 
      console.log("WhatsApp message:", message);
    
-    const encodedMessage = encodeURIComponent(message);
-     const whatsappUrl = `https://wa.me/573142621490?text=${encodedMessage}`;
-   
-     console.log("Opening WhatsApp URL:", whatsappUrl);
-   
-     // Intentar abrir en una nueva ventana
-     const whatsappWindow = window.open(whatsappUrl, "_blank");
+  const whatsappUrl = `https://wa.me/573142621490?text=${message}`;
+  console.log("Opening WhatsApp URL:", whatsappUrl);
+
+  // Intentar abrir en una nueva ventana
+  const whatsappWindow = window.open(whatsappUrl, "_blank");
    
      if (!whatsappWindow) {
        console.error("Failed to open WhatsApp window - popup might be blocked");

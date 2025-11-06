@@ -73,7 +73,7 @@ const ProductsSection = () => {
 
   const handleAddToOrder = (productName: string) => {
     const message = `¡Hola! Quiero pedir ${productName} 😊`;
-    window.open(`https://wa.me/573142621490?text=${encodeURIComponent(message)}`, "_blank");
+    window.open(`https://wa.me/573142621490?text=${message}`, "_blank");
   };
 
   const handleViewAll = () => {
