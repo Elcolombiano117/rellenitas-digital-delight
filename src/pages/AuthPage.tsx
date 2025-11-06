@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,13 +55,62 @@ const AuthPage = () => {
 
   const handleLogin = async (values: AuthFormValues) => {
     setIsLoading(true);
-    await signIn(values.email, values.password);
+    const ok = await signIn(values.email, values.password);
+    if (ok) {
+      // If login succeeded, check whether this user is admin and redirect accordingly.
+      try {
+        const sessionRes = await supabase.auth.getSession();
+        const userId = sessionRes.data.session?.user?.id || null;
+        if (userId) {
+          const { data: roleData, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+            .eq('role', 'admin')
+            .maybeSingle();
+
+          if (!roleError && roleData) {
+            navigate('/admin');
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (e) {
+        // ignore and fallback to root
+      }
+
+      navigate('/');
+    }
     setIsLoading(false);
   };
 
   const handleSignup = async (values: AuthFormValues) => {
     setIsLoading(true);
-    await signUp(values.email, values.password);
+    const ok = await signUp(values.email, values.password);
+    if (ok) {
+      // after signup try to detect admin role and redirect similar to login flow
+      try {
+        const sessionRes = await supabase.auth.getSession();
+        const userId = sessionRes.data.session?.user?.id || null;
+        if (userId) {
+          const { data: roleData, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+            .eq('role', 'admin')
+            .maybeSingle();
+
+          if (!roleError && roleData) {
+            setIsLoading(false);
+            navigate('/admin');
+            return;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+      navigate('/');
+    }
     setIsLoading(false);
   };
 

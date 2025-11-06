@@ -32,25 +32,33 @@ export const useAuth = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
+      // Update local state immediately when possible
+      const session = data?.session ?? null;
+      const usr = session?.user ?? null;
+      setSession(session as Session | null);
+      setUser(usr as User | null);
+
       toast({
         title: "¡Bienvenido de nuevo!",
         description: "Has iniciado sesión exitosamente.",
       });
-      
-      // No redirigir aquí, dejar que AuthPage maneje la redirección
+
+      // Return success so callers can redirect immediately if they want
+      return true;
     } catch (error: any) {
       toast({
         title: "Error al iniciar sesión",
         description: error.message || "Verifica tus credenciales e intenta de nuevo.",
         variant: "destructive",
       });
+      return false;
     }
   };
 
@@ -58,7 +66,7 @@ export const useAuth = () => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -68,16 +76,25 @@ export const useAuth = () => {
 
       if (error) throw error;
 
+      // If a session is returned (some Supabase flows may return session), set local state
+      const session = data?.session ?? null;
+      const usr = session?.user ?? null;
+      setSession(session as Session | null);
+      setUser(usr as User | null);
+
       toast({
         title: "¡Cuenta creada!",
         description: "Revisa tu correo para confirmar tu cuenta.",
       });
+
+      return true;
     } catch (error: any) {
       toast({
         title: "Error al crear cuenta",
         description: error.message || "No se pudo crear la cuenta. Intenta de nuevo.",
         variant: "destructive",
       });
+      return false;
     }
   };
 
