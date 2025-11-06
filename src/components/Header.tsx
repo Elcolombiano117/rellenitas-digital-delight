@@ -56,31 +56,36 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
-              <div className="flex items-baseline space-x-8">
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className="text-foreground hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200"
+              {/* If the user is admin, show a minimal header (admin controls only) */}
+              {!isAdmin && (
+                <>
+                  <div className="flex items-baseline space-x-8">
+                    {navigation.map((item) => (
+                      <a
+                        key={item.name}
+                        href={item.href}
+                        className="text-foreground hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200"
+                      >
+                        {item.name}
+                      </a>
+                    ))}
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative"
+                    onClick={() => setIsCartOpen(true)}
                   >
-                    {item.name}
-                  </a>
-                ))}
-              </div>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                onClick={() => setIsCartOpen(true)}
-              >
-                <ShoppingCart className="h-6 w-6 text-primary" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                    {totalItems}
-                  </span>
-                )}
-              </Button>
+                    <ShoppingCart className="h-6 w-6 text-primary" />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {totalItems}
+                      </span>
+                    )}
+                  </Button>
+                </>
+              )}
 
               {user ? (
                 <div className="flex items-center gap-3 border-l border-border pl-4">
@@ -137,7 +142,6 @@ const Header = () => {
                   </span>
                 )}
               </Button>
-
               {user ? (
                 <Button
                   variant="ghost"
@@ -210,26 +214,31 @@ const Header = () => {
         </nav>
       </header>
 
-      {/* WhatsApp floating button */}
-      <Button
-        onClick={handleWhatsApp}
-        className="fixed bottom-6 right-6 z-50 btn-whatsapp rounded-full shadow-lg px-4 py-3 h-auto"
-        size="lg"
-      >
-        <span className="text-xl mr-2">📱</span>
-        <span className="hidden sm:inline">¡Habla con nosotros!</span>
-        <span className="sm:hidden">WhatsApp</span>
-      </Button>
+      {/* WhatsApp floating button - hide for admins */}
+      {!isAdmin && (
+        <Button
+          onClick={handleWhatsApp}
+          className="fixed bottom-6 right-6 z-50 btn-whatsapp rounded-full shadow-lg px-4 py-3 h-auto"
+          size="lg"
+        >
+          <span className="text-xl mr-2">📱</span>
+          <span className="hidden sm:inline">¡Habla con nosotros!</span>
+          <span className="sm:hidden">WhatsApp</span>
+        </Button>
+      )}
 
-      {/* Shopping Cart Panel */}
-      <ShoppingCartPanel open={isCartOpen} onOpenChange={setIsCartOpen} />
-      
-      {/* Quick Order Dialog */}
-      <QuickOrderDialog 
-        open={isQuickOrderOpen} 
-        onOpenChange={setIsQuickOrderOpen}
-        onOpenCart={() => setIsCartOpen(true)}
-      />
+      {/* Shopping Cart Panel and Quick Order Dialog - hide for admins */}
+      {!isAdmin && (
+        <>
+          <ShoppingCartPanel open={isCartOpen} onOpenChange={setIsCartOpen} />
+          
+          <QuickOrderDialog 
+            open={isQuickOrderOpen} 
+            onOpenChange={setIsQuickOrderOpen}
+            onOpenCart={() => setIsCartOpen(true)}
+          />
+        </>
+      )}
     </>
   );
 };
