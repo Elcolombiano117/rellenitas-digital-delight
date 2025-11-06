@@ -100,8 +100,11 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      // If there's no active session, treat as already signed out
-      if (!session) {
+      // Refresh current session from client to avoid calling signOut when there's no valid session
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+
+      // If there's no active session or no refresh token, just clear local state and skip the network call.
+      if (!currentSession || !currentSession.refresh_token) {
         setUser(null);
         setSession(null);
         toast({
@@ -113,7 +116,23 @@ export const useAuth = () => {
       }
 
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Supabase may respond with 400/403 when the refresh token is already invalid server-side.
+      // Treat those cases as a successful sign-out from the client perspective.
+      if (error) {
+        const status = (error as any)?.status;
+        const msg = (error as any)?.message || String(error);
+        if (status === 400 || status === 403 || (typeof msg === 'string' && msg.toLowerCase().includes('auth session missing'))) {
+          setUser(null);
+          setSession(null);
+          toast({
+            title: "Sesión cerrada",
+            description: "La sesión ya no era válida y fue cerrada.",
+          });
+          navigate('/auth');
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: "Sesión cerrada",
@@ -123,13 +142,14 @@ export const useAuth = () => {
       navigate('/auth');
     } catch (error: any) {
       const msg = error?.message || String(error);
-      // Supabase can return 'Auth session missing!' when no session exists — treat as signed out
-      if (typeof msg === 'string' && msg.toLowerCase().includes('auth session missing')) {
+      // Treat known auth-missing or forbidden/invalid token errors as successful sign-out to avoid noisy errors
+      const status = (error as any)?.status;
+      if (status === 400 || status === 403 || (typeof msg === 'string' && msg.toLowerCase().includes('auth session missing'))) {
         setUser(null);
         setSession(null);
         toast({
           title: "Sesión cerrada",
-          description: "No había sesión activa. Ya estás desconectado.",
+          description: "La sesión ya no era válida y fue cerrada.",
         });
         navigate('/auth');
         return;
