@@ -11,7 +11,6 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 
 const checkoutSchema = z.object({
   fullName: z.string().trim().min(1, "El nombre completo es obligatorio").max(100),
@@ -116,17 +115,12 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
   const onSubmit = async (data: CheckoutFormData) => {
     setIsSubmitting(true);
     
-    // Require authentication due to DB Row Level Security (RLS) policies
-    if (!user) {
-      setIsSubmitting(false);
-      toast({
-        title: "Necesitas iniciar sesión",
-        description: "Para crear un pedido, por favor inicia sesión o regístrate.",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
+    // Support guest orders: if no authenticated user, generate an order token
+    const orderToken = user
+      ? null
+      : (typeof crypto !== 'undefined' && (crypto as any).randomUUID
+          ? (crypto as any).randomUUID()
+          : Math.random().toString(36).slice(2, 10));
 
     try {
       // Generate order number
@@ -155,6 +149,7 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
           discount_amount: couponDiscount,
           total_amount: finalTotal,
           coupon_code: appliedCoupon || null,
+          order_token: orderToken,
         })
         .select()
         .single();
