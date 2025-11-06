@@ -147,6 +147,40 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
         .single();
       if (orderError) {
         console.error("Order creation error from Supabase:", orderError);
+        // If RLS blocks the insert, fall back to opening WhatsApp so the user can enviar el pedido manualmente
+        const errMsg = (orderError as any)?.message || '';
+        if (errMsg.toLowerCase().includes('row-level security')) {
+          // build whatsapp message with order details
+          let message = `¡Hola! Quiero confirmar mi pedido de Rellenitas 🍪\n\n`;
+          message += `📦 Número de pedido provisional: ${orderNumber}\n\n`;
+          message += `📋 Mi pedido:\n`;
+          items.forEach((item) => {
+            const itemTotal = item.price * item.quantity;
+            message += `• ${item.name} x${item.quantity} → ${formatPrice(itemTotal)}\n`;
+          });
+          message += `\n💰 Total: ${formatPrice(finalTotal)}\n\n`;
+          message += `📍 Datos de entrega:\n`;
+          message += `Nombre: ${data.fullName}\n`;
+          if (data.email) message += `Email: ${data.email}\n`;
+          message += `Dirección: ${data.address}\n`;
+          message += `Ciudad: ${data.city}, ${data.department}\n`;
+          message += `Teléfono: ${data.phone}\n\n`;
+          const whatsappUrl = `https://wa.me/573142621490?text=${encodeURIComponent(message)}`;
+          try {
+            window.open(whatsappUrl, '_blank');
+          } catch (e) {
+            // fallback to location change
+            window.location.href = whatsappUrl;
+          }
+          toast({
+            title: "Pedido vía WhatsApp",
+            description: "No se pudo crear el pedido automáticamente por políticas de seguridad; se abrió WhatsApp para que puedas enviar tu pedido manualmente.",
+          });
+          // call onConfirm so parent can perform its WhatsApp behavior / close cart
+          try { onConfirm({ ...data, orderNumber, orderId: null }); } catch(e) {}
+          setIsSubmitting(false);
+          return;
+        }
         throw orderError;
       }
 
