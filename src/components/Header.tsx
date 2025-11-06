@@ -15,7 +15,7 @@ const Header = () => {
   const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { getTotalItems } = useCart();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const totalItems = getTotalItems();
@@ -104,9 +104,10 @@ const Header = () => {
                     size="sm"
                     onClick={signOut}
                     className="gap-2"
+                    disabled={authLoading}
                   >
                     <LogOut className="h-4 w-4" />
-                    Salir
+                    {authLoading ? 'Saliendo...' : 'Salir'}
                   </Button>
                 </div>
               ) : (
@@ -144,6 +145,7 @@ const Header = () => {
                   size="icon"
                   onClick={signOut}
                   title="Salir"
+                  disabled={authLoading}
                 >
                   <LogOut className="h-5 w-5" />
                 </Button>
