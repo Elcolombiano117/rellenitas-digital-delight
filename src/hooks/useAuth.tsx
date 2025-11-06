@@ -83,6 +83,18 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
+      // If there's no active session, treat as already signed out
+      if (!session) {
+        setUser(null);
+        setSession(null);
+        toast({
+          title: "Sesión cerrada",
+          description: "No había sesión activa. Ya estás desconectado.",
+        });
+        navigate('/');
+        return;
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
@@ -90,12 +102,25 @@ export const useAuth = () => {
         title: "Sesión cerrada",
         description: "Has cerrado sesión exitosamente.",
       });
-      
+
       navigate('/');
     } catch (error: any) {
+      const msg = error?.message || String(error);
+      // Supabase can return 'Auth session missing!' when no session exists — treat as signed out
+      if (typeof msg === 'string' && msg.toLowerCase().includes('auth session missing')) {
+        setUser(null);
+        setSession(null);
+        toast({
+          title: "Sesión cerrada",
+          description: "No había sesión activa. Ya estás desconectado.",
+        });
+        navigate('/');
+        return;
+      }
+
       toast({
         title: "Error al cerrar sesión",
-        description: error.message,
+        description: msg,
         variant: "destructive",
       });
     }
