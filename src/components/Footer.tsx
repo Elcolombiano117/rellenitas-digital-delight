@@ -8,15 +8,8 @@ const Footer = () => {
   const handleSocialClick = (platform: string) => {
     const urls = {
       instagram: "https://instagram.com/rellenitas.valledupar",
+      whatsapp: "https://wa.me/573142621490?text=¡Hola! Quiero más información sobre Rellenitas 😊"
     };
-
-    if (platform === 'whatsapp') {
-      const waText = `¡Hola! Quiero más información sobre Rellenitas 😊`;
-      const whatsappUrl = `https://wa.me/573142621490?text=${encodeURIComponent(waText)}`;
-      window.open(whatsappUrl, "_blank");
-      return;
-    }
-
     window.open(urls[platform as keyof typeof urls], "_blank");
   };
 

@@ -115,13 +115,6 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
   const onSubmit = async (data: CheckoutFormData) => {
     setIsSubmitting(true);
     
-    // Support guest orders: if no authenticated user, generate an order token
-    const orderToken = user
-      ? null
-      : (typeof crypto !== 'undefined' && (crypto as any).randomUUID
-          ? (crypto as any).randomUUID()
-          : Math.random().toString(36).slice(2, 10));
-
     try {
       // Generate order number
       const orderNumber = `REL-${Date.now().toString().slice(-8)}`;
@@ -149,18 +142,11 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
           discount_amount: couponDiscount,
           total_amount: finalTotal,
           coupon_code: appliedCoupon || null,
-          order_token: orderToken,
         })
         .select()
         .single();
       if (orderError) {
         console.error("Order creation error from Supabase:", orderError);
-        // Provide clearer feedback if Row Level Security blocks the insert
-        if (orderError.message && orderError.message.includes("row-level security")) {
-          throw new Error(
-            "El servidor no permite crear pedidos sin la política adecuada (RLS). Asegúrate de estar autenticado o configura la política en Supabase."
-          );
-        }
         throw orderError;
       }
 

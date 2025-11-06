@@ -77,8 +77,7 @@ const ProductsSection = () => {
   };
 
   const handleViewAll = () => {
-    const waText = `¡Hola! Quiero ver todos los sabores disponibles 😊`;
-    window.open(`https://wa.me/573142621490?text=${encodeURIComponent(waText)}`, "_blank");
+    window.open("https://wa.me/573142621490?text=¡Hola! Quiero ver todos los sabores disponibles 😊", "_blank");
   };
 
   return (
