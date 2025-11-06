@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const checkoutSchema = z.object({
   fullName: z.string().trim().min(1, "El nombre completo es obligatorio").max(100),
@@ -115,6 +116,18 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
   const onSubmit = async (data: CheckoutFormData) => {
     setIsSubmitting(true);
     
+    // Require authentication due to DB Row Level Security (RLS) policies
+    if (!user) {
+      setIsSubmitting(false);
+      toast({
+        title: "Necesitas iniciar sesión",
+        description: "Para crear un pedido, por favor inicia sesión o regístrate.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
     try {
       // Generate order number
       const orderNumber = `REL-${Date.now().toString().slice(-8)}`;
@@ -147,6 +160,12 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
         .single();
       if (orderError) {
         console.error("Order creation error from Supabase:", orderError);
+        // Provide clearer feedback if Row Level Security blocks the insert
+        if (orderError.message && orderError.message.includes("row-level security")) {
+          throw new Error(
+            "El servidor no permite crear pedidos sin la política adecuada (RLS). Asegúrate de estar autenticado o configura la política en Supabase."
+          );
+        }
         throw orderError;
       }
 
