@@ -91,7 +91,7 @@ export const useAuth = () => {
           title: "Sesión cerrada",
           description: "No había sesión activa. Ya estás desconectado.",
         });
-        navigate('/');
+        navigate('/auth');
         return;
       }
 
@@ -103,7 +103,7 @@ export const useAuth = () => {
         description: "Has cerrado sesión exitosamente.",
       });
 
-      navigate('/');
+      navigate('/auth');
     } catch (error: any) {
       const msg = error?.message || String(error);
       // Supabase can return 'Auth session missing!' when no session exists — treat as signed out
@@ -114,7 +114,7 @@ export const useAuth = () => {
           title: "Sesión cerrada",
           description: "No había sesión activa. Ya estás desconectado.",
         });
-        navigate('/');
+        navigate('/auth');
         return;
       }
 
