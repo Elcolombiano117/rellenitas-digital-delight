@@ -111,7 +111,7 @@ export const useAuth = () => {
           title: "Sesión cerrada",
           description: "No había sesión activa. Ya estás desconectado.",
         });
-        navigate('/auth');
+  navigate('/');
         return;
       }
 
@@ -128,7 +128,7 @@ export const useAuth = () => {
             title: "Sesión cerrada",
             description: "La sesión ya no era válida y fue cerrada.",
           });
-          navigate('/auth');
+          navigate('/');
           return;
         }
         throw error;
@@ -139,7 +139,7 @@ export const useAuth = () => {
         description: "Has cerrado sesión exitosamente.",
       });
 
-      navigate('/auth');
+  navigate('/');
     } catch (error: any) {
       const msg = error?.message || String(error);
       // Treat known auth-missing or forbidden/invalid token errors as successful sign-out to avoid noisy errors
@@ -151,7 +151,7 @@ export const useAuth = () => {
           title: "Sesión cerrada",
           description: "La sesión ya no era válida y fue cerrada.",
         });
-        navigate('/auth');
+  navigate('/');
         return;
       }
 
