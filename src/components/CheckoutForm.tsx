@@ -10,6 +10,7 @@ import { ArrowLeft, CheckCircle, Tag } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
 const checkoutSchema = z.object({
@@ -36,6 +37,7 @@ interface CheckoutFormProps {
 
 const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState("");
@@ -114,6 +116,16 @@ const CheckoutForm = ({ items, totalPrice, onBack, onConfirm }: CheckoutFormProp
 
   const onSubmit = async (data: CheckoutFormData) => {
     setIsSubmitting(true);
+    // If user is not authenticated, avoid attempting DB insert (RLS will block it)
+    if (!user) {
+      toast({
+        title: "Inicia sesión",
+        description: "Debes iniciar sesión o crear una cuenta para completar el pedido.",
+      });
+      setIsSubmitting(false);
+      navigate('/auth');
+      return;
+    }
     
     try {
       // Generate order number
